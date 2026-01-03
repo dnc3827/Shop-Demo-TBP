@@ -31,7 +31,7 @@
               <td>
                 <img
                   v-if="p.imageUrl"
-                  :src="`${apiBase}${p.imageUrl}`"
+                  :src="p.imageUrl"
                   alt="product"
                   class="img-thumbnail"
                   style="width: 60px; height: 60px; object-fit: cover"

@@ -6,7 +6,7 @@
       :key="p.id"
     >
       <img
-        :src="`${apiBase}${p.imageUrl}`"
+        :src="p.imageUrl"
         alt="product"
       />
 
