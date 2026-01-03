@@ -74,12 +74,26 @@
 
               <!-- IMAGE -->
               <div class="mb-3">
-                <label class="form-label fw-semibold">
-                  Image URL
-                </label>
+                <label class="form-label fw-semibold">Ảnh sản phẩm</label>
+                <div class="mb-2" v-if="!previewUrl && product.imageUrl">
+                  <small class="text-muted d-block">Ảnh hiện tại:</small>
+                  <img :src="product.imageUrl" class="img-thumbnail" style="max-height: 100px;">
+                </div>
                 <input
-                  v-model="product.imageUrl"
+                  type="file"
                   class="form-control"
+                  @change="onFileSelected"
+                  accept="image/*"
+                />
+                <small class="text-muted">Để trống nếu không muốn thay đổi ảnh</small>
+              </div>
+
+              <div v-if="previewUrl" class="mt-2">
+                <label class="form-label fw-semibold text-success">Xem trước ảnh mới:</label>
+                <img 
+                  :src="previewUrl" 
+                  class="img-fluid d-block rounded shadow-sm" 
+                  style="max-height: 200px; border: 2px solid #ffc107;"
                 />
               </div>
 
@@ -111,16 +125,17 @@ import api from "@/services/axios";
 
 export default {
   name: "EditProduct",
-
   data() {
     return {
       product: {
         name: "",
         price: null,
-        imageUrl: "",
+        imageUrl: "", // Link ảnh cũ từ DB
         description: "",
         categoryId: null
       },
+      selectedFile: null, // File mới người dùng chọn
+      previewUrl: null,   // Link xem trước ảnh mới
       categories: []
     };
   },
@@ -147,32 +162,50 @@ export default {
       try {
         const id = this.$route.params.id;
         const res = await api.get(`/api/products/${id}`);
-
-        this.product = {
-          name: res.data.name,
-          price: res.data.price,
-          imageUrl: res.data.imageUrl,
-          description: res.data.description,
-          categoryId: res.data.categoryId
-        };
+        this.product = res.data;
       } catch (err) {
         console.error(err);
         alert("Không tải được sản phẩm");
       }
     },
 
+    // Hàm xử lý chọn ảnh mới
+    onFileSelected(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.selectedFile = file;
+        this.previewUrl = URL.createObjectURL(file);
+      }
+    },
+
     async updateProduct() {
       try {
         const id = this.$route.params.id;
-        await api.put(`/api/products/${id}`, this.product);
 
-        alert("Cập nhật thành công");
+        // Chuyển sang FormData để gửi kèm file
+        const formData = new FormData();
+        formData.append("Name", this.product.name);
+        formData.append("Price", this.product.price);
+        formData.append("CategoryId", this.product.categoryId);
+        formData.append("Description", this.product.description || "");
+        
+        // Nếu có chọn ảnh mới, gửi kèm qua key 'imageFile'
+        if (this.selectedFile) {
+          formData.append("imageFile", this.selectedFile);
+        }
+
+        await api.put(`/api/products/${id}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+
+        alert("Cập nhật thành công!");
         this.$router.push("/admin/products");
       } catch (err) {
         console.error(err);
-        alert("Bạn chưa đăng nhập Admin hoặc lỗi dữ liệu");
+        alert("Cập nhật thất bại. Kiểm tra lại dữ liệu hoặc quyền Admin.");
       }
     }
   }
+
 };
 </script>

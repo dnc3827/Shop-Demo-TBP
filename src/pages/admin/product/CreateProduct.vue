@@ -77,24 +77,22 @@
 
               <!-- IMAGE -->
               <div class="mb-3">
-                <label class="form-label fw-semibold">
-                  Image URL
-                </label>
+                <label class="form-label fw-semibold">Ảnh sản phẩm</label>
                 <input
-                  v-model="product.imageUrl"
+                  type="file"
                   class="form-control"
-                  placeholder="/images/"
+                  @change="onFileSelected"
+                  accept="image/*"
                 />
               </div>
 
-              <!-- IMAGE PREVIEW -->
-              <div v-if="product.imageUrl" class="mt-2">
-                <label class="form-label fw-semibold">Preview:</label>
+              <div v-if="previewUrl" class="mt-2">
+                <label class="form-label fw-semibold">Xem trước ảnh:</label>
                 <img 
-                  :src="product.imageUrl" 
+                  :src="previewUrl" 
                   alt="Product Image" 
-                  class="img-fluid" 
-                  style="max-height: 200px;"
+                  class="img-fluid d-block rounded" 
+                  style="max-height: 200px; border: 1px solid #ddd;"
                 />
               </div>
 
@@ -126,16 +124,17 @@ import api from "@/services/axios";
 
 export default {
   name: "CreateProduct",
-
   data() {
     return {
       product: {
         name: "",
         price: null,
-        imageUrl: "",
         description: "",
-        categoryId: null
+        categoryId: null,
+        // Bỏ imageUrl ở đây vì ta sẽ dùng file
       },
+      selectedFile: null, // Thêm biến giữ file thực tế
+      previewUrl: null,   // Thêm biến tạo link xem trước
       categories: []
     };
   },
@@ -145,6 +144,7 @@ export default {
   },
 
   methods: {
+    // 1. Giữ nguyên hàm này để lấy danh sách loại sản phẩm khi vào trang
     async loadCategories() {
       try {
         const res = await api.get("/api/categories");
@@ -155,6 +155,16 @@ export default {
       }
     },
 
+    // 2. Hàm mới để xử lý khi người dùng chọn file ảnh từ máy tính
+    onFileSelected(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.selectedFile = file;
+        this.previewUrl = URL.createObjectURL(file); // Tạo link tạm để hiện ảnh lên màn hình
+      }
+    },
+
+    // 3. Hàm tạo sản phẩm đã được nâng cấp để gửi File
     async createProduct() {
       if (!this.product.categoryId) {
         alert("Vui lòng chọn danh mục");
@@ -162,14 +172,30 @@ export default {
       }
 
       try {
-        await api.post("/api/products", this.product);
-        alert("Tạo sản phẩm thành công");
+        // Dùng FormData để gửi được File ảnh sang C#
+        const formData = new FormData();
+        formData.append("Name", this.product.name);
+        formData.append("Price", this.product.price);
+        formData.append("CategoryId", this.product.categoryId);
+        formData.append("Description", this.product.description || "");
+        
+        // Gửi file thực tế với key 'imageFile' (phải khớp tham số bên C#)
+        if (this.selectedFile) {
+          formData.append("imageFile", this.selectedFile);
+        }
+
+        await api.post("/api/products", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+
+        alert("✅ Tạo sản phẩm thành công và đã upload lên Cloudinary!");
         this.$router.push("/admin/products");
       } catch (err) {
         console.error(err);
-        alert("Bạn chưa đăng nhập Admin hoặc lỗi dữ liệu");
+        alert("❌ Lỗi: " + (err.response?.data?.message || "Không thể tạo sản phẩm"));
       }
     }
   }
+
 };
 </script>
