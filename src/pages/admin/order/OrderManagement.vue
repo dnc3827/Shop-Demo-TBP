@@ -85,7 +85,7 @@ import axios from "axios";
 
 const orders = ref([]);
 
-const API_URL = "https://localhost:7136/api/order";
+const API_URL = "https://shop-demo-be-tbp-production.up.railway.app/api/order";
 
 // ================= LOAD ALL ORDERS (ADMIN) =================
 const loadOrders = async () => {
