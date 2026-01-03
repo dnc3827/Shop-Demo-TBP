@@ -121,7 +121,7 @@ const formData = ref({
 // Load blogs
 const loadBlogs = async () => {
   try {
-    const res = await api.get('/api/blogs')
+    const res = await api.get('/blogs')
     blogs.value = res.data
   } catch (err) {
     console.error(err)
@@ -145,7 +145,7 @@ const showCreateForm = () => {
 // Edit blog
 const editBlog = async (blog) => {
   try {
-    const res = await api.get(`/api/blogs/${blog.blogId}`)
+    const res = await api.get(`/blogs/${blog.blogId}`)
     editMode.value = true
     formData.value = {
       blogId: res.data.blogId,
@@ -165,10 +165,10 @@ const editBlog = async (blog) => {
 const submitForm = async () => {
   try {
     if (editMode.value) {
-      await api.put(`/api/blogs/${formData.value.blogId}`, formData.value)
+      await api.put(`/blogs/${formData.value.blogId}`, formData.value)
       alert('✅ Cập nhật blog thành công')
     } else {
-      await api.post('/api/blogs', formData.value)
+      await api.post('/blogs', formData.value)
       alert('✅ Tạo blog thành công')
     }
     closeModal()
@@ -184,7 +184,7 @@ const deleteBlog = async (id) => {
   if (!confirm('Bạn có chắc muốn xóa blog này?')) return
 
   try {
-    await api.delete(`/api/blogs/${id}`)
+    await api.delete(`/blogs/${id}`)
     alert('✅ Đã xóa blog')
     loadBlogs()
   } catch (err) {
