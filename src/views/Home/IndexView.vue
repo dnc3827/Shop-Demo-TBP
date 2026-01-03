@@ -32,7 +32,7 @@
           class="product-card"
         >
           <div class="p-thumb">
-            <img :src="shirt.image" :alt="shirt.name" class="img-product" />
+            <img :src="shirt.imageUrl" :alt="shirt.name" class="img-product" />
             <div class="p-tag" v-if="shirt.hot">HOT</div>
           </div>
 
