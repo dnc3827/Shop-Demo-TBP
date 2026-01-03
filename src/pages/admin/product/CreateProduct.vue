@@ -147,7 +147,7 @@ export default {
   methods: {
     async loadCategories() {
       try {
-        const res = await api.get("/categories");
+        const res = await api.get("/api/categories");
         this.categories = res.data;
       } catch (err) {
         console.error(err);
@@ -162,7 +162,7 @@ export default {
       }
 
       try {
-        await api.post("/products", this.product);
+        await api.post("/api/products", this.product);
         alert("Tạo sản phẩm thành công");
         this.$router.push("/admin/products");
       } catch (err) {

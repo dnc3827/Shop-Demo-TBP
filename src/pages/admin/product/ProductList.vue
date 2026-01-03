@@ -92,7 +92,7 @@ export default {
       products: [],
       page: 1,
       size: 10,
-      apiBase: import.meta.env.VITE_API_BASE_URL
+      apiBase: api.defaults.baseURL.replace(/\/api$/, "").replace(/\/api\/$/, "")
     };
   },
 

@@ -38,7 +38,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import axios from '@/services/axios'  
+import api from '@/services/axios'  
 
 /* ================= STATE ================= */
 const dashboard = ref({
@@ -51,7 +51,7 @@ const dashboard = ref({
 /* ================= API ================= */
 const fetchDashboard = async () => {
   try {
-    const res = await axios.get('/api/admin/dashboard')
+    const res = await api.get('/api/admin/dashboard')
 
     dashboard.value = {
       TotalRevenue: res.data.totalRevenue,
