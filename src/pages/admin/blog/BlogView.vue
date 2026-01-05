@@ -141,7 +141,7 @@ const showCreateForm = () => {
 
 // ====== EDIT ======
 const editBlog = async (blog) => {
-  const res = await api.get(`/api/blogs/${blog.blogId}`)
+  const res = await api.get(`/api/blogs/admin/${blog.blogId}`)
   editMode.value = true
   selectedImageFile.value = null
   formData.value = {
