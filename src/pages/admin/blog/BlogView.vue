@@ -55,21 +55,15 @@
             />
           </div>
 
-          <div class="form-group">
-            <label>URL Hình ảnh</label>
-            <input
-              v-model="formData.imageUrl"
-              type="text"
-              placeholder="https://example.com/image.jpg"
-              required
-            />
-            <img
-              v-if="formData.imageUrl"
-              :src="formData.imageUrl"
-              alt="Preview"
-              class="image-preview"
-            />
-          </div>
+          <div class="mb-3">
+              <label class="form-label fw-semibold">Ảnh blog</label>
+              <input
+                type="file"
+                class="form-control"
+                @change="onFileSelected"
+                accept="image/*"
+              />
+            </div>
 
           <div class="form-group">
             <label>Nội dung</label>
@@ -110,67 +104,77 @@ const blogs = ref([])
 const showModal = ref(false)
 const editMode = ref(false)
 
+const selectedImageFile = ref(null)
+
 const formData = ref({
   blogId: null,
   title: '',
-  imageUrl: '',
   content: '',
   isActive: true
 })
 
-// Load blogs
-const loadBlogs = async () => {
-  try {
-    const res = await api.get('/api/blogs')
-    blogs.value = res.data
-  } catch (err) {
-    console.error(err)
-    alert('Không thể tải danh sách blog')
-  }
+// ====== FILE SELECT ======
+const onFileSelected = (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+  selectedImageFile.value = file
 }
 
-// Show create form
+// ====== LOAD BLOGS ======
+const loadBlogs = async () => {
+  const res = await api.get('/api/blogs')
+  blogs.value = res.data
+}
+
+// ====== CREATE ======
 const showCreateForm = () => {
   editMode.value = false
+  selectedImageFile.value = null
   formData.value = {
     blogId: null,
     title: '',
-    imageUrl: '',
     content: '',
     isActive: true
   }
   showModal.value = true
 }
 
-// Edit blog
+// ====== EDIT ======
 const editBlog = async (blog) => {
-  try {
-    const res = await api.get(`/api/blogs/${blog.blogId}`)
-    editMode.value = true
-    formData.value = {
-      blogId: res.data.blogId,
-      title: res.data.title,
-      imageUrl: res.data.imageUrl,
-      content: res.data.content || '',
-      isActive: res.data.isActive
-    }
-    showModal.value = true
-  } catch (err) {
-    console.error(err)
-    alert('Không thể tải thông tin blog')
+  const res = await api.get(`/api/blogs/${blog.blogId}`)
+  editMode.value = true
+  selectedImageFile.value = null
+  formData.value = {
+    blogId: res.data.blogId,
+    title: res.data.title,
+    content: res.data.content || '',
+    isActive: res.data.isActive
   }
+  showModal.value = true
 }
 
-// Submit form
+// ====== SUBMIT ======
 const submitForm = async () => {
   try {
+    const fd = new FormData()
+
+    fd.append('BlogId', formData.value.blogId ?? '')
+    fd.append('Title', formData.value.title)
+    fd.append('Content', formData.value.content)
+    fd.append('IsActive', formData.value.isActive)
+
+    if (selectedImageFile.value) {
+      fd.append('imageFile', selectedImageFile.value)
+    }
+
     if (editMode.value) {
-      await api.put(`/api/blogs/${formData.value.blogId}`, formData.value)
+      await api.put('/api/blogs/update', fd)
       alert('✅ Cập nhật blog thành công')
     } else {
-      await api.post('/api/blogs', formData.value)
+      await api.post('/api/blogs/create', fd)
       alert('✅ Tạo blog thành công')
     }
+
     closeModal()
     loadBlogs()
   } catch (err) {
@@ -179,27 +183,21 @@ const submitForm = async () => {
   }
 }
 
-// Delete blog
+// ====== DELETE ======
 const deleteBlog = async (id) => {
   if (!confirm('Bạn có chắc muốn xóa blog này?')) return
-
-  try {
-    await api.delete(`/api/blogs/${id}`)
-    alert('✅ Đã xóa blog')
-    loadBlogs()
-  } catch (err) {
-    console.error(err)
-    alert('❌ Không thể xóa blog')
-  }
+  await api.delete(`/api/blogs/${id}`)
+  loadBlogs()
 }
 
-// Close modal
+// ====== CLOSE ======
 const closeModal = () => {
   showModal.value = false
 }
 
 onMounted(loadBlogs)
 </script>
+
 
 <style scoped>
 .admin-blog-page {
