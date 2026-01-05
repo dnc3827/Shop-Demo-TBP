@@ -142,8 +142,10 @@ const showCreateForm = () => {
 // ====== EDIT ======
 const editBlog = async (blog) => {
   const res = await api.get(`/api/blogs/admin/${blog.blogId}`)
+
   editMode.value = true
   selectedImageFile.value = null
+
   formData.value = {
     blogId: res.data.blogId,
     title: res.data.title,
@@ -157,35 +159,36 @@ const editBlog = async (blog) => {
 const submitForm = async () => {
   try {
     const fd = new FormData()
-
-    // ✅ CHỈ append BlogId khi EDIT
     if (editMode.value && formData.value.blogId) {
       fd.append('BlogId', formData.value.blogId.toString())
     }
-
     fd.append('Title', formData.value.title)
     fd.append('Content', formData.value.content)
-
-    // ✅ BOOLEAN PHẢI ÉP STRING
     fd.append('IsActive', formData.value.isActive ? 'true' : 'false')
 
     if (selectedImageFile.value) {
       fd.append('imageFile', selectedImageFile.value)
     }
 
+    let response;
     if (editMode.value) {
-      await api.put('/api/blogs/update', fd)
+      response = await api.put('/api/blogs/update', fd)
       alert('✅ Cập nhật blog thành công')
     } else {
-      await api.post('/api/blogs/create', fd)
+      response = await api.post('/api/blogs/create', fd)
       alert('✅ Tạo blog thành công')
     }
 
+    // response.data bây giờ chính là Object sạch { blogId, title, content, imageUrl... }
+    console.log("Dữ liệu trả về từ BE:", response.data);
+
     closeModal()
-    loadBlogs()
+    loadBlogs() // Load lại danh sách để cập nhật ảnh mới và nội dung mới
   } catch (err) {
-    console.error('Submit blog error:', err.response?.data || err)
-    alert('❌ Có lỗi xảy ra')
+    // Sửa cách hiển thị lỗi để dễ debug
+    const errorMsg = err.response?.data?.message || err.response?.data || 'Có lỗi xảy ra'
+    console.error('Submit blog error:', errorMsg)
+    alert('❌ ' + errorMsg)
   }
 }
 
