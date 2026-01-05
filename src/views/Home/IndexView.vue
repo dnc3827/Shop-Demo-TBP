@@ -182,7 +182,7 @@ const loadFeaturedProducts = async () => {
       name: p.name,
       rawPrice: p.price,
       price: Number(p.price).toLocaleString("vi-VN") + " đ",
-      image: import.meta.env.VITE_API_BASE_URL + p.imageUrl,
+      imageUrl: p.imageUrl,
       hot: p.isHot
     }))
   } catch (err) {
