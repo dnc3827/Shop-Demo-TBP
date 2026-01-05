@@ -20,7 +20,7 @@
 
           <div v-for="(item, index) in cartItems" :key="item.id" class="cart-item">
             <div class="item-info">
-              <img :src="item.image" :alt="item.name" class="item-img" />
+              <img :src="item.imageUrl" :alt="item.name" class="item-img" />
               <div class="item-details">
                 <h3>{{ item.name }}</h3>
                 <p class="item-price">{{ formatPrice(item.rawPrice) }}</p>
