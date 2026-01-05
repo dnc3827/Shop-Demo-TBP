@@ -158,10 +158,16 @@ const submitForm = async () => {
   try {
     const fd = new FormData()
 
-    fd.append('BlogId', formData.value.blogId ?? '')
+    // ✅ CHỈ append BlogId khi EDIT
+    if (editMode.value && formData.value.blogId) {
+      fd.append('BlogId', formData.value.blogId.toString())
+    }
+
     fd.append('Title', formData.value.title)
     fd.append('Content', formData.value.content)
-    fd.append('IsActive', formData.value.isActive)
+
+    // ✅ BOOLEAN PHẢI ÉP STRING
+    fd.append('IsActive', formData.value.isActive ? 'true' : 'false')
 
     if (selectedImageFile.value) {
       fd.append('imageFile', selectedImageFile.value)
@@ -178,10 +184,11 @@ const submitForm = async () => {
     closeModal()
     loadBlogs()
   } catch (err) {
-    console.error(err)
+    console.error('Submit blog error:', err.response?.data || err)
     alert('❌ Có lỗi xảy ra')
   }
 }
+
 
 // ====== DELETE ======
 const deleteBlog = async (id) => {
